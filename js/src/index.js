@@ -309,6 +309,12 @@ class JupyterScatterView {
       this.scatterplot.subscribe('deselect', this.deselectHandlerBound);
       this.scatterplot.subscribe('filter', this.filterEventHandlerBound);
       this.scatterplot.subscribe('view', this.viewChangeHandlerBound);
+      this.scatterplot.subscribe('lassoEnd', ({ centerPositions }) => {
+        console.log("lassoEnd")
+        console.log({centerPositions})
+        this.model.set("center_positions", centerPositions);
+        this.model.save_changes();
+      })
 
       window.pubSub = pubSub;
 
@@ -2356,7 +2362,8 @@ function modelWithSerializers(model, serializers) {
   }
 }
 
-export async function render({ model, el }) {
+async function render({ model, el }) {
+
   const view = new JupyterScatterView({
     el: el,
     model: modelWithSerializers(model, {
@@ -2370,3 +2377,5 @@ export async function render({ model, el }) {
   view.render();
   return () => view.destroy();
 }
+
+export default {render}

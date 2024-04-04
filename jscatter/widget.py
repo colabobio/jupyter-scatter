@@ -223,6 +223,8 @@ class JupyterScatter(anywidget.AnyWidget):
     # For synchronyzing view changes across scatter plot instances
     view_sync = Unicode(None, allow_none=True).tag(sync=True)
 
+    center_positions = List().tag(sync=True)
+
     def __init__(self, data, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
