@@ -353,27 +353,7 @@ class JupyterScatter(anywidget.AnyWidget):
         def click_handler(b):
             button.button_style = 'primary'
             self.mouse_mode = mouse_mode
-
-            if mouse_mode == 'lasso':
-                # Change selection manager in js code to lasso
-                print("use lasso")
-                self.send({ "type": "setlasso"})
-            elif mouse_mode == 'directional':
-                # Change selection manager in js code to directional
-                print("use directional")
-                self.send({ "type": "setdirectional"})
-            #added by askar Aug 23,2024 -not sure if necessary to be honest because it might interfere with normal functionality
-            elif mouse_mode == 'panZoom':
-                # Change selection manager in js code to panZoom
-                print("use panZoom")
-                self.send({ "type": "setpanZoom"})
-            # elif mouse_mode == 'rotate':
-            #     # Change selection manager in js code to rotate
-            #     print("use rotate")
-            #     self.send({ "type": "setrotate"})
-            else:
-                print(mouse_mode)    
-
+  
         def change_handler(change):
             button.button_style = 'primary' if change['new'] == mouse_mode else ''
 
@@ -394,7 +374,7 @@ class JupyterScatter(anywidget.AnyWidget):
             tooltip='Activate lasso selection',
         )
         button_directional = self.create_mouse_mode_toggle_button(
-            mouse_mode='lasso',
+            mouse_mode='directional',
             icon='bullseye',
             tooltip='Activate directional selection',
         )
