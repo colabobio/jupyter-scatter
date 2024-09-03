@@ -304,6 +304,7 @@ class JupyterScatterView {
       this.externalViewChangeHandlerBound = this.externalViewChangeHandler.bind(this);
       this.viewChangeHandlerBound = this.viewChangeHandler.bind(this);
       this.resizeHandlerBound = this.resizeHandler.bind(this);
+      this.selectionEndHandlerBound = this.selectionEndHandler.bind(this);
 
       this.scatterplot.subscribe('pointover', this.pointoverHandlerBound);
       this.scatterplot.subscribe('pointout', this.pointoutHandlerBound);
@@ -311,6 +312,7 @@ class JupyterScatterView {
       this.scatterplot.subscribe('deselect', this.deselectHandlerBound);
       this.scatterplot.subscribe('filter', this.filterEventHandlerBound);
       this.scatterplot.subscribe('view', this.viewChangeHandlerBound);
+      this.scatterplot.subscribe('selectionEnd', this.selectionEndHandlerBound);
 
       window.pubSub = pubSub;
 
@@ -1750,6 +1752,8 @@ class JupyterScatterView {
     this.scatterplot.unsubscribe('deselect', this.deselectHandlerBound);
     this.scatterplot.unsubscribe('filter', this.filterEventHandlerBound);
     this.scatterplot.unsubscribe('view', this.viewChangeHandlerBound);
+    this.scatterplot.unsubscribe('selectionEnd', this.selectionEndHandlerBound);
+
     this.showTooltipDebounced.cancel();
     this.scatterplot.destroy();
   }
@@ -1795,6 +1799,13 @@ class JupyterScatterView {
     if (this.model.get('zoom_on_selection')) this.zoomToHandler(event.points);
     this.model.set('selection', [...event.points]);
     this.model.save_changes();
+  }
+
+  selectionEndHandler(event) {
+    this.model.set('center_positions', [...event.centers]);    
+    this.model.save_changes();
+    // eslint-disable-next-line
+    console.log("Saved center positions to the model", this.model.get('center_positions'))
   }
 
   deselectHandler() {

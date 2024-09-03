@@ -4172,6 +4172,13 @@ class Scatter():
 
         return self._widget
 
+    def centers(self):
+        if self._widget is not None:
+            print("center_positions", self._widget.center_positions)
+            return self._widget.center_positions
+        else:
+            return []        
+
     def update_widget(self, prop, val):
         if self._widget is not None:
             setattr(self._widget, prop, val)

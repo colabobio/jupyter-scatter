@@ -73,9 +73,7 @@ class JupyterScatter(anywidget.AnyWidget):
     selection = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
     filter = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
     hovering = Int(None, allow_none=True).tag(sync=True)
-
-    center_positions = List().tag(sync=True)
-    dir_center_positions = List().tag(sync=True)
+    center_positions = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
 
     # Channel titles
     x_title = Unicode(None, allow_none=True).tag(sync=True)
