@@ -72,11 +72,11 @@ const properties = {
   colorHover: 'pointColorHover',
   width: 'width',
   height: 'height',
-  lassoColor: 'lassoColor',
-  lassoInitiator: 'lassoInitiator',
-  lassoOnLongPress: 'lassoOnLongPress',
-  lassoMinDelay: 'lassoMinDelay',
-  lassoMinDist: 'lassoMinDist',
+  selectColor: 'selectColor',
+  selectInitiator: 'selectInitiator',
+  selectOnLongPress: 'selectOnLongPress',
+  selectMinDelay: 'selectMinDelay',
+  selectMinDist: 'selectMinDist',
   mouseMode: 'mouseMode',
   opacity: 'opacity',
   opacityBy: 'opacityBy',
@@ -174,11 +174,11 @@ const reglScatterplotProperty = new Set([
   'pointColorHover',
   'width',
   'height',
-  'lassoColor',
-  'lassoInitiator',
-  'lassoOnLongPress',
-  'lassoMinDelay',
-  'lassoMinDist',
+  'selectColor',
+  'selectInitiator',
+  'selectOnLongPress',
+  'selectMinDelay',
+  'selectMinDist',
   'mouseMode',
   'opacity',
   'opacityBy',
@@ -205,7 +205,7 @@ const reglScatterplotProperty = new Set([
 class JupyterScatterView {
 
   constructor({ el, model }) {
-    this.el = el;
+    this.el = el;    
     this.model = model;
     this.eventTypes = model.get('event_types');
   }
@@ -279,8 +279,6 @@ class JupyterScatterView {
       });
 
       this.scatterplot = createScatterplot(initialOptions);
-      
-      
     
       if (!window.jupyterScatter.versionLog) {
         // eslint-disable-next-line
@@ -306,24 +304,13 @@ class JupyterScatterView {
       this.externalViewChangeHandlerBound = this.externalViewChangeHandler.bind(this);
       this.viewChangeHandlerBound = this.viewChangeHandler.bind(this);
       this.resizeHandlerBound = this.resizeHandler.bind(this);
-      //This is Askar's code added on Aug 22 to try out
-      //if (this.model.get(mouse))
-      this.scatterplot.subscribe('lassoEnd', ({ centerPositions }) => {
-        // eslint-disable-next-line
-        console.log("lassoEnd")
-        // eslint-disable-next-line
-        console.log({centerPositions})
-        this.model.set("center_positions", centerPositions);
-        this.model.save_changes();
-      })
-      this.scatterplot.subscribe('dirEnd', ({ dircenterPositions }) => {
-        // eslint-disable-next-line
-        console.log("dirEnd")
-        // eslint-disable-next-line
-        console.log({dircenterPositions})
-        this.model.set("dir_center_positions", dircenterPositions);
-        this.model.save_changes();
-      })
+
+      this.scatterplot.subscribe('pointover', this.pointoverHandlerBound);
+      this.scatterplot.subscribe('pointout', this.pointoutHandlerBound);
+      this.scatterplot.subscribe('select', this.selectHandlerBound);
+      this.scatterplot.subscribe('deselect', this.deselectHandlerBound);
+      this.scatterplot.subscribe('filter', this.filterEventHandlerBound);
+      this.scatterplot.subscribe('view', this.viewChangeHandlerBound);
 
       window.pubSub = pubSub;
 
@@ -2151,16 +2138,16 @@ class JupyterScatterView {
     this.withPropertyChangeHandler('backgroundImage', newValue);
   }
 
-  lassoColorHandler(newValue) {
-    this.withPropertyChangeHandler('lassoColor', newValue);
+  selectColorHandler(newValue) {
+    this.withPropertyChangeHandler('selectColor', newValue);
   }
 
-  lassoMinDelayHandler(newValue) {
-    this.withPropertyChangeHandler('lassoMinDelay', newValue);
+  selectMinDelayHandler(newValue) {
+    this.withPropertyChangeHandler('selectMinDelay', newValue);
   }
 
-  lassoMinDistHandler(newValue) {
-    this.withPropertyChangeHandler('lassoMinDist', newValue);
+  selectMinDistHandler(newValue) {
+    this.withPropertyChangeHandler('selectMinDist', newValue);
   }
 
   xTitleHandler(newTitle) {
@@ -2301,12 +2288,12 @@ class JupyterScatterView {
     this.withPropertyChangeHandler('cameraView', newValue);
   }
 
-  lassoInitiatorHandler(newValue) {
-    this.withPropertyChangeHandler('lassoInitiator', newValue);
+  selectInitiatorHandler(newValue) {
+    this.withPropertyChangeHandler('selectInitiator', newValue);
   }
 
-  lassoOnLongPressHandler(newValue) {
-    this.withPropertyChangeHandler('lassoOnLongPress', newValue);
+  selectOnLongPressHandler(newValue) {
+    this.withPropertyChangeHandler('selectOnLongPress', newValue);
   }
 
   mouseModeHandler(newValue) {

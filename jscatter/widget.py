@@ -1,14 +1,14 @@
 import base64
-import IPython.display as ipydisplay # type: ignore
-import ipywidgets as widgets # type: ignore
-import matplotlib.pyplot as plt # type: ignore
-import numpy as np # type: ignore
-import anywidget # type: ignore
-import pandas as pd # type: ignore
+import IPython.display as ipydisplay
+import ipywidgets as widgets
+import matplotlib.pyplot as plt
+import numpy as np
+import anywidget
+import pandas as pd
 import pathlib
 
-from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union # type: ignore
-from traittypes import Array # type: ignore
+from traitlets import Bool, Dict, Enum, Float, Int, List, Unicode, Union
+from traittypes import Array
 
 from .annotations_traits import (
     Line,
@@ -74,6 +74,9 @@ class JupyterScatter(anywidget.AnyWidget):
     filter = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
     hovering = Int(None, allow_none=True).tag(sync=True)
 
+    center_positions = List().tag(sync=True)
+    dir_center_positions = List().tag(sync=True)
+
     # Channel titles
     x_title = Unicode(None, allow_none=True).tag(sync=True)
     y_title = Unicode(None, allow_none=True).tag(sync=True)
@@ -136,8 +139,8 @@ class JupyterScatter(anywidget.AnyWidget):
 
     # Interaction properties
     mouse_mode = Enum(['panZoom', 'lasso', 'directional', 'rotate'], default_value='panZoom').tag(sync=True)
-    lasso_initiator = Bool().tag(sync=True)
-    lasso_on_long_press = Bool().tag(sync=True)
+    select_initiator = Bool().tag(sync=True)
+    select_on_long_press = Bool().tag(sync=True)
 
     # Axes
     axes = Bool().tag(sync=True)
@@ -221,9 +224,9 @@ class JupyterScatter(anywidget.AnyWidget):
     height = Int().tag(sync=True)
     background_color = Union([Unicode(), List(minlen=4, maxlen=4)]).tag(sync=True)
     background_image = Unicode(None, allow_none=True).tag(sync=True)
-    lasso_color = Union([Unicode(), List(minlen=4, maxlen=4)]).tag(sync=True)
-    lasso_min_delay = Int().tag(sync=True)
-    lasso_min_dist = Float().tag(sync=True)
+    select_color = Union([Unicode(), List(minlen=4, maxlen=4)]).tag(sync=True)
+    select_min_delay = Int().tag(sync=True)
+    select_min_dist = Float().tag(sync=True)
     # selection_outline_width = Int().tag(sync=True)
     reticle = Bool().tag(sync=True)
     reticle_color = Union([Unicode(), List(minlen=4, maxlen=4)]).tag(sync=True)
@@ -237,9 +240,6 @@ class JupyterScatter(anywidget.AnyWidget):
 
     # For synchronyzing view changes across scatter plot instances
     view_sync = Unicode(None, allow_none=True).tag(sync=True)
-
-    center_positions = List().tag(sync=True)
-    dir_center_positions = List().tag(sync=True)
 
     event_types = Dict(EVENT_TYPES, read_only=True).tag(sync=True)
 
@@ -339,9 +339,9 @@ class JupyterScatter(anywidget.AnyWidget):
         self,
         mouse_mode,
         icon,
-        tooltip,
+        tooltip,        
     ):
-        button = Button(
+        button = widgets.Button(
             description='',
             icon=icon,
             tooltip=tooltip,

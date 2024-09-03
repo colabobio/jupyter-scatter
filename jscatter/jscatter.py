@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from matplotlib.colors import to_rgba, Normalize, LogNorm, PowerNorm, LinearSegmentedColormap, ListedColormap
-from typing import Dict, Optional, Union, List, Tuple, Literal
+from typing import Dict, Optional, Union, List, Tuple
 
 from .annotations import Line, HLine, VLine, Rect
 from .encodings import Encodings
@@ -248,11 +248,11 @@ class Scatter():
         )
 
         self._annotations = None
-        self._lasso_color = (0, 0.666666667, 1, 1)
-        self._lasso_on_long_press = True
-        self._lasso_initiator = False
-        self._lasso_min_delay = 10
-        self._lasso_min_dist = 3
+        self._select_color = (0, 0.666666667, 1, 1)
+        self._select_on_long_press = True
+        self._select_initiator = False
+        self._select_min_delay = 10
+        self._select_min_dist = 3
         self._x_data = None
         self._x_by = None
         self._x_histogram = None
@@ -427,12 +427,12 @@ class Scatter():
             kwargs.get('connection_size_order', UNDEF),
             kwargs.get('connection_size_labeling', UNDEF),
         )
-        self.lasso(
-            kwargs.get('lasso_color', UNDEF),
-            kwargs.get('lasso_initiator', UNDEF),
-            kwargs.get('lasso_min_delay', UNDEF),
-            kwargs.get('lasso_min_dist', UNDEF),
-            kwargs.get('lasso_on_long_press', UNDEF),
+        self.selector(
+            kwargs.get('select_color', UNDEF),
+            kwargs.get('select_initiator', UNDEF),
+            kwargs.get('select_min_delay', UNDEF),
+            kwargs.get('select_min_dist', UNDEF),
+            kwargs.get('select_on_long_press', UNDEF),
         )
         self.reticle(
             kwargs.get('reticle', UNDEF),
@@ -1009,6 +1009,7 @@ class Scatter():
         >>> scatter.selection()
         array([0, 4, 12], dtype=uint32)
         """
+
         if point_ids is not UNDEF:
             try:
                 if self._data is not None and self._data_use_index:
@@ -2888,7 +2889,7 @@ class Scatter():
             view = self._camera_view,
         )
 
-    def lasso(
+    def selector(
         self,
         color: Optional[Union[Color, Undefined]] = UNDEF,
         initiator: Optional[Union[bool, Undefined]] = UNDEF,
@@ -2897,40 +2898,40 @@ class Scatter():
         on_long_press: Optional[Union[bool, Undefined]]  = UNDEF,
     ):
         """
-        Set or get the lasso settings.
+        Set or get the selector settings.
 
         Parameters
         ----------
         color : matplotlib compatible color, optional
-            The lasso color
+            The selection color
         initiator : bool, optional
-            When set to `True`, the lasso can be initiated via a click on the
+            When set to `True`, the selector can be initiated via a click on the
             background and then click+hold+drag onto the circle with the dashed
-            outline that appears. This circle, the "lasso initiator", can also
+            outline that appears. This circle, the "select initiator", can also
             be triggered via a long press anywhere.
         min_delay : float, optional
-            The minimum delay in milliseconds before the lasso polygon is
+            The minimum delay in milliseconds before the selection polygon is
             extended. In 99.99% of the cases, you can ignore this setting but
-            in can be useful to lower the delay if you want a precise lasso when
+            in can be useful to lower the delay if you want a precise selection when
             you move your mouse quickly.
         min_dist : float, optional
             The minimum distance from the previous mouse position before the
-            lasso polygon is extended. In 99.99% of the cases, you can ignore
+            selection polygon is extended. In 99.99% of the cases, you can ignore
             this setting but in can be useful to lower the distance if you want
-            a high-resolution lasso.
+            a high-resolution selection.
         on_long_press : bool, optional
-            When set to `True`, the lasso is activated upon a long press.
+            When set to `True`, the selector is activated upon a long press.
 
         Returns
         -------
         self or dict
-            If no parameter was provided the current lasso settings are
+            If no parameter was provided the current selector settings are
             returned as a dictionary. Otherwise, `self` is returned.
 
         Notes
         -----
         See https://user-images.githubusercontent.com/932103/106489598-f42c4480-6482-11eb-8286-92a9956e1d20.gif
-        for an example of how the lasso initiator works
+        for an example of how the select initiator works
 
         See Also
         --------
@@ -2938,22 +2939,22 @@ class Scatter():
 
         Examples
         --------
-        >>> scatter.lasso(color='red')
+        >>> scatter.selector(color='red')
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.lasso(initiator=False)
+        >>> scatter.selector(initiator=False)
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.lasso(min_delay=5)
+        >>> scatter.selector(min_delay=5)
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.lasso(min_dist=2)
+        >>> scatter.selector(min_dist=2)
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.lasso(on_long_press=False)
+        >>> scatter.selector(on_long_press=False)
         <jscatter.jscatter.Scatter>
 
-        >>> scatter.lasso()
+        >>> scatter.selector()
         {'color': (0, 0.666666667, 1, 1),
          'initiator': False,
          'min_delay': 10,
@@ -2962,36 +2963,36 @@ class Scatter():
         """
         if color is not UNDEF:
             try:
-                self._lasso_color = to_rgba(color)
-                self.update_widget('lasso_color', self._lasso_color)
+                self._select_color = to_rgba(color)
+                self.update_widget('select_color', self._select_color)
             except:
                 pass
 
         if initiator is not UNDEF:
             try:
-                self._lasso_initiator = bool(initiator)
-                self.update_widget('lasso_initiator', self._lasso_initiator)
+                self._select_initiator = bool(initiator)
+                self.update_widget('select_initiator', self._select_initiator)
             except:
                 pass
 
         if min_delay is not UNDEF:
             try:
-                self._lasso_min_delay = to_rgba(color)
-                self.update_widget('lasso_min_delay', self._lasso_min_delay)
+                self._select_min_delay = to_rgba(color)
+                self.update_widget('select_min_delay', self._select_min_delay)
             except:
                 pass
 
         if min_dist is not UNDEF:
             try:
-                self._lasso_min_dist = float(min_dist)
-                self.update_widget('lasso_min_dist', self._lasso_min_dist)
+                self._select_min_dist = float(min_dist)
+                self.update_widget('select_min_dist', self._select_min_dist)
             except:
                 pass
 
         if on_long_press is not UNDEF:
             try:
-                self._lasso_on_long_press = bool(on_long_press)
-                self.update_widget('lasso_on_long_press', self._lasso_on_long_press)
+                self._select_on_long_press = bool(on_long_press)
+                self.update_widget('select_on_long_press', self._select_on_long_press)
             except:
                 pass
 
@@ -2999,11 +3000,11 @@ class Scatter():
             return self
 
         return dict(
-            color = self._lasso_color,
-            initiator = self._lasso_initiator,
-            min_delay = self._lasso_min_delay,
-            min_dist = self._lasso_min_dist,
-            on_long_press = self._lasso_on_long_press,
+            color = self._select_color,
+            initiator = self._select_initiator,
+            min_delay = self._select_min_delay,
+            min_dist = self._select_min_dist,
+            on_long_press = self._select_on_long_press,
         )
 
     def width(
@@ -3196,9 +3197,9 @@ class Scatter():
 
         Parameters
         ----------
-        show : 'panZoom', 'lasso' or 'rotate', optional
+        show : 'panZoom', 'lasso', 'directional', or 'rotate', optional
             The mouse mode. Currently, three modes are supported: pan & zoom,
-            lasso selection, or rotating the scatter plot.
+            lasso selection, directional selection, or rotating the scatter plot.
 
         Returns
         -------
@@ -4101,11 +4102,11 @@ class Scatter():
             connection_size_by=self.js_connection_size_by,
             filter=self._filtered_points_idxs,
             height=self._height,
-            lasso_color=self._lasso_color,
-            lasso_initiator=self._lasso_initiator,
-            lasso_min_delay=self._lasso_min_delay,
-            lasso_min_dist=self._lasso_min_dist,
-            lasso_on_long_press=self._lasso_on_long_press,
+            select_color=self._select_color,
+            select_initiator=self._select_initiator,
+            select_min_delay=self._select_min_delay,
+            select_min_dist=self._select_min_dist,
+            select_on_long_press=self._select_on_long_press,
             legend=self._legend,
             legend_color=self.get_legend_color(),
             legend_encoding=self.get_legend_encoding(),
