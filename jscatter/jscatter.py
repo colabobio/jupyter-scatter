@@ -9,7 +9,7 @@ from typing import Dict, Optional, Union, List, Tuple
 
 from .annotations import Line, HLine, VLine, Rect
 from .encodings import Encodings
-from .widget import JupyterScatter, SELECTION_DTYPE
+from .widget import JupyterScatter, SELECTION_DTYPE, COORDINATE_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
 from .utils import any_not, to_ndc, tolist, uri_validator, to_scale_type, get_scale_type_from_df, get_domain_from_df, create_default_norm, create_labeling, get_histogram_from_df, sanitize_tooltip_properties, zerofy_missing_values
 from .types import Auto, Color, Scales, MouseModes, Auto, Reverse, Segment, Size, LegendPosition, VisualProperty, Labeling, TooltipPreviewType, TooltipPreviewImagePosition, TooltipPreviewImageSize, Undefined
@@ -236,6 +236,8 @@ class Scatter():
         self._selected_points_idxs = np.asarray([], dtype=SELECTION_DTYPE)
         self._filtered_points_ids = None
         self._filtered_points_idxs = None
+
+        self._center_positions = np.asarray([], dtype=COORDINATE_DTYPE)
 
         self._transition_points = True
         self._transition_points_duration = DEFAULT_TRANSITION_POINTS_DURATION
@@ -4188,6 +4190,7 @@ class Scatter():
             reticle=self._reticle,
             reticle_color=self.get_reticle_color(),
             selection=self._selected_points_idxs,
+            center_positions=self._center_positions,
             size=order_map(self._size_map, self._size_order) if self._size_map else self._size,
             size_by=self.js_size_by,
             size_domain=get_domain(self, 'size'),

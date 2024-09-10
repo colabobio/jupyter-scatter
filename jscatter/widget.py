@@ -19,6 +19,7 @@ from .annotations_traits import (
 )
 
 SELECTION_DTYPE = 'uint32'
+COORDINATE_DTYPE = 'float32'
 EVENT_TYPES = {
     "TOOLTIP": "tooltip",
     "VIEW_DOWNLOAD": "view_download",
