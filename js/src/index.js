@@ -81,7 +81,7 @@ const properties = {
   opacity: 'opacity',
   opacityBy: 'opacityBy',
   opacityUnselected: 'opacityInactiveScale',
-  otherOptions: 'otherOptions',
+  reglScatterplotOptions: 'reglScatterplotOptions',
   points: 'points',
   reticle: 'showReticle',
   reticleColor: 'reticleColor',
@@ -245,10 +245,7 @@ class JupyterScatterView {
 
     this.canvasWrapper = document.createElement('div');
     this.canvasWrapper.style.position = 'absolute';
-    this.canvasWrapper.style.top = '0';
-    this.canvasWrapper.style.left = '0';
-    this.canvasWrapper.style.right = '0';
-    this.canvasWrapper.style.bottom = '0';
+    this.canvasWrapper.style.inset = '0';
     this.container.appendChild(this.canvasWrapper);
 
     this.canvas = document.createElement('canvas');
@@ -271,7 +268,7 @@ class JupyterScatterView {
         if (this[pyName] !== null && reglScatterplotProperty.has(jsName)) {
           initialOptions[jsName] = this[pyName];
         }
-        if (this[pyName] !== null && jsName === 'otherOptions') {
+        if (this[pyName] !== null && jsName === 'reglScatterplotOptions') {
           Object.entries(this[pyName]).forEach(([key, value]) => {
             initialOptions[key] = value;
           })
@@ -320,7 +317,9 @@ class JupyterScatterView {
       this.viewSyncHandler(this.viewSync);
 
       if ('ResizeObserver' in window) {
-        this.canvasObserver = new ResizeObserver(this.resizeHandlerBound);
+        this.canvasObserver = new ResizeObserver(() => {
+          window.requestAnimationFrame(() => { this.resizeHandlerBound(); });
+        });
         this.canvasObserver.observe(this.canvas);
       } else {
         window.addEventListener('resize', this.resizeHandlerBound);
@@ -337,8 +336,8 @@ class JupyterScatterView {
         }, this);
       });
 
-      this.model.on('change:other_options', () => {
-        this.options = this.model.get('other_options');
+      this.model.on('change:regl_scatterplot_options', () => {
+        this.options = this.model.get('regl_scatterplot_options');
         this.optionsHandler.call(this, this.options);
       }, this);
 
@@ -450,7 +449,7 @@ class JupyterScatterView {
     this.outerWidth = outerWidth;
     this.outerHeight = outerHeight;
 
-    return [outerWidth, outerHeight]
+    return [Math.max(1, outerWidth), Math.max(1, outerHeight)];
   }
 
   createAxes() {
@@ -581,6 +580,8 @@ class JupyterScatterView {
     if (this.model.get('axes_grid')) this.createAxesGrid();
 
     this.updateLegendWrapperPosition();
+
+    this.updateAxes(this.xScaleRegl.domain(), this.yScaleRegl.domain());
   }
 
   removeAxes() {
@@ -1684,7 +1685,7 @@ class JupyterScatterView {
       : (width + xPadding) + 'px';
     this.container.style.height = (height + yPadding) + 'px';
 
-    window.requestAnimationFrame(() => { this.resizeHandler(); });
+    window.requestAnimationFrame(() => { this.resizeHandlerBound(); });
   }
 
   resizeHandler() {
@@ -1725,6 +1726,9 @@ class JupyterScatterView {
     if (this.model.get('axes_grid')) {
       this.xAxis.tickSizeInner(-(height - yPadding));
       this.yAxis.tickSizeInner(-(width - xPadding));
+      this.axesSvg.selectAll('line')
+        .attr('stroke-opacity', 0.2)
+        .attr('stroke-dasharray', 2);
     }
 
     if (xLabel) {
@@ -2070,7 +2074,7 @@ class JupyterScatterView {
       // We assume point correspondence
       this.scatterplot.draw(newPoints, {
         transition: this.model.get('transition_points'),
-        transitionDuration: 3000,
+        transitionDuration: this.model.get('transition_points_duration'),
         transitionEasing: 'quadInOut',
         preventFilterReset: this.model.get('prevent_filter_reset'),
       });
@@ -2162,11 +2166,15 @@ class JupyterScatterView {
   }
 
   xTitleHandler(newTitle) {
-    this.tooltipPropertyXTitle.textContent = toTitleCase(newTitle || '');
+    if (this.tooltipPropertyXTitle) {
+      this.tooltipPropertyXTitle.textContent = toTitleCase(newTitle || '');
+    }
   }
 
   yTitleHandler(newTitle) {
-    this.tooltipPropertyYTitle.textContent = toTitleCase(newTitle || '');
+    if (this.tooltipPropertyYTitle) {
+      this.tooltipPropertyYTitle.textContent = toTitleCase(newTitle || '');
+    }
   }
 
   colorHandler(newValue) {
@@ -2184,13 +2192,22 @@ class JupyterScatterView {
   }
 
   colorByHandler(newValue) {
+    const currValue = this.scatterplot.get('colorBy');
     this.createColorScale();
     this.createColorGetter();
     this.withPropertyChangeHandler('colorBy', newValue);
+    if (!currValue && newValue) {
+      // We need to reapply the point color due to some internal
+      // regl-scatterplot logic which uses a different active point color when
+      // the point color is changed and colorBy is undefined
+      this.withPropertyChangeHandler('pointColor', this.model.get('color'));
+    }
   }
 
   colorTitleHandler(newTitle) {
-    this.tooltipPropertyColorTitle.textContent = toCapitalCase(newTitle || '');
+    if (this.tooltipPropertyColorTitle) {
+      this.tooltipPropertyColorTitle.textContent = toCapitalCase(newTitle || '');
+    }
   }
 
   opacityHandler(newValue) {
@@ -2204,13 +2221,15 @@ class JupyterScatterView {
   }
 
   opacityByHandler(newValue) {
-    // this.createOpacityScale();
-    // this.createOpacityGetter();
+    this.createOpacityScale();
+    this.createOpacityGetter();
     this.withPropertyChangeHandler('opacityBy', newValue);
   }
 
   opacityTitleHandler(newTitle) {
-    this.tooltipPropertyOpacityTitle.textContent = toCapitalCase(newTitle || '');
+    if (this.tooltipPropertyOpacityTitle) {
+      this.tooltipPropertyOpacityTitle.textContent = toCapitalCase(newTitle || '');
+    }
   }
 
   sizeHandler(newValue) {
@@ -2226,7 +2245,9 @@ class JupyterScatterView {
   }
 
   sizeTitleHandler(newTitle) {
-    this.tooltipPropertySizeTitle.textContent = toCapitalCase(newTitle || '');
+    if (this.tooltipPropertySizeTitle) {
+      this.tooltipPropertySizeTitle.textContent = toCapitalCase(newTitle || '');
+    }
   }
 
   connectHandler(newValue) {
