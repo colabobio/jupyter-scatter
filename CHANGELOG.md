@@ -1,3 +1,14 @@
+## v0.19.1
+
+- Fix: revert back to `pd.api.types.is_string_dtype` from `pd.StringDType` because the two function, albeit looking semantically identical, do not do the same thing. The former detects object and string types while the latter only strictly detects string types. This is confusing as `pd.Series(['a', 'b'])` is of type `object`. So `pd.StringDtype.is_dtype(pd.Series(['a', 'b'])) == False` but `pd.api.types.is_string_dtype(pd.Series(['a', 'b'])) == True`. [Wat](https://www.destroyallsoftware.com/talks/wat)?!
+
+## v0.19.0
+
+- Feat: add contour line annotations [#163](https://github.com/flekschas/jupyter-scatter/issues/163)
+- Refactor: rename the `reset_view` argument of `scatter.data()` to `zoom_view` for clarity [#162](https://github.com/flekschas/jupyter-scatter/issues/162)
+- Docs: add API docs for `reset_scales`, `zoom_view`, and `animate` of `scatter.data()`
+- Fix: don't use external view domain (only the view) [#161](https://github.com/flekschas/jupyter-scatter/issues/161)
+
 ## v0.18.1
 
 - Fix: re-enable point transition and make it explicit via `scatter.options(transition_points=True, transition_points_duration=3000)`

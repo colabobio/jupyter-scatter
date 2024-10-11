@@ -3,11 +3,13 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import warnings
 
 from matplotlib.colors import to_rgba, Normalize, LogNorm, PowerNorm, LinearSegmentedColormap, ListedColormap
 from typing import Dict, Optional, Union, List, Tuple
 
 from .annotations import Line, HLine, VLine, Rect
+from .composite_annotations import CompositeAnnotation, Contour
 from .encodings import Encodings
 from .widget import JupyterScatter, SELECTION_DTYPE, COORDINATE_DTYPE
 from .color_maps import okabe_ito, glasbey_light, glasbey_dark
@@ -168,7 +170,19 @@ def normalize_annotations(annotations, x_scale, y_scale):
         return None
     return [normalize_annotation(a, x_scale, y_scale) for a in annotations]
 
+def get_annotations(
+    scatter: Scatter,
+    annotations: List[Union[Line, VLine, HLine, Rect, Contour]]
+):
+    base_annotations = []
 
+    for annotation in annotations:
+        if isinstance(annotation, CompositeAnnotation):
+            base_annotations.extend(annotation.get_annotations(scatter))
+        else:
+            base_annotations.append(annotation)
+
+    return base_annotations
 
 class Scatter():
     def __init__(
@@ -516,7 +530,7 @@ class Scatter():
         data: Optional[pd.DataFrame] = None,
         use_index: Optional[Union[bool, Undefined]] = UNDEF,
         reset_scales: Optional[bool] = False,
-        reset_view: Optional[bool] = False,
+        zoom_view: Optional[bool] = False,
         animate: Optional[bool] = False,
         **kwargs
     ) -> Union[Scatter, dict]:
@@ -536,17 +550,17 @@ class Scatter():
         reset_scales : bool, optional
             If `True`, all scales (and norms) will be reset to the extend of the
             the new data.
-        reset_view : bool, optional
-            If `True`, the view will be reset to the origin.
+        zoom_view : bool, optional
+            If `True`, the view will zoom to the data extent.
         animate : bool, optional
             If `True`, if the number of points remain the same, and if
             `reset_scales` is `False`, the points will transition smoothly. If
-            `reset_view` is `True`, the view will also transition smoothly.
+            `zoom_view` is `True`, the view will also transition smoothly.
 
         Returns
         -------
         self or dict
-            If no parameter was provided a dictionary with the current `data`
+            If no arguments were provided a dictionary with the current `data`
             and `use_label_index` setting is returned. Otherwise, `self` is
             returned.
 
@@ -627,10 +641,22 @@ class Scatter():
                 self.update_widget('y_domain', self._y_domain)
                 self.update_widget('y_scale_domain', self._y_scale_domain)
 
-            if reset_view:
+            if 'reset_view' in kwargs:
+                warnings.warn(
+                    "The 'reset_view' argument was renamed to 'zoom_view'",
+                    DeprecationWarning,
+                )
+                zoom_view = bool(kwargs.get('reset_view', False))
+
+            if zoom_view:
                 if reset_scales:
+                    # If the scales are reset to the extent of the (new) data,
+                    # then we can zoom to the data extent by simply resetting
+                    # the view
                     self.widget.reset_view()
                 else:
+                    # If the scales unchanged, we can zoom to the data extent by
+                    # setting `data_extent=True` of `self.widget.reset_view`
                     animation = 3000 if animate and same_n else 0
                     self.widget.reset_view(
                         animation=animation,
@@ -3772,16 +3798,16 @@ class Scatter():
 
     def annotations(
         self,
-        annotations: Optional[Union[List[Union[Line, HLine, VLine, Rect]], Undefined]] = UNDEF,
+        annotations: Optional[Union[List[Union[Line, HLine, VLine, Rect, Contour]], Undefined]] = UNDEF,
     ):
         """
         Draw line-based annotatons
 
         Parameters
         ----------
-        annotations : list of `Line`, `HLine`, `VLine`, `Rect`, optional
-            A list of annotations (`Line`, `HLine`, `VLine`, `Rect`) or `None`.
-            When set to `None` or `[]` all annotations are removed.
+        annotations : list of `Line`, `HLine`, `VLine`, `Rect`, `Contour` optional
+            A list of annotations (`Line`, `HLine`, `VLine`, `Rect`, `Contour`)
+            or `None`. When set to `None` or `[]` all annotations are removed.
 
         Returns
         -------
@@ -3799,7 +3825,11 @@ class Scatter():
         """
 
         if annotations is not UNDEF:
-            self._annotations = annotations
+            if annotations is None:
+                self._annotations = []
+            else:
+                self._annotations = get_annotations(self, annotations)
+
             self.update_widget(
                 'annotations',
                 normalize_annotations(
