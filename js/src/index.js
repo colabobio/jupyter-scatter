@@ -7,7 +7,7 @@ import {
   throttleAndDebounce,
 } from '@flekschas/utils';
 import { globalPubSub } from 'pub-sub-es';
-import createScatterplot, { createRenderer } from 'regl-scatterplot';
+import createScatterplot, { createRenderer } from 'regl-scatterplot-scsketch';
 
 import { axisBottom, axisRight } from 'd3-axis';
 import { format } from 'd3-format';
@@ -356,7 +356,7 @@ class JupyterScatterView {
       if (!window.jupyterScatter.versionLog) {
         // biome-ignore lint/suspicious/noConsole: We want to log the version once
         console.info(
-          `jupyter-scatter v${version} with regl-scatterplot v${this.scatterplot.get('version')}`,
+          `jupyter-scatter v${version} with regl-scatterplot-scsketch v${this.scatterplot.get('version')}`,
         );
         window.jupyterScatter.versionLog = true;
       }

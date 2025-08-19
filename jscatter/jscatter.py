@@ -4905,8 +4905,8 @@ class Scatter:
         Notes
         -----
         The scatter rendering is done with a JavaScript library called
-        regl-scatterplot. Please see the following page for available settings:
-        https://github.com/flekschas/regl-scatterplot
+        regl-scatterplot-scsketch. Please see the following page for available settings:
+        https://github.com/flekschas/regl-scatterplot-sketch
 
         Examples
         --------
