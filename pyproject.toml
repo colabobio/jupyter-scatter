@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "jupyter-scatter"
-description = "An interactive scatter plot widget for Jupyter Notebook, Lab, and Google Colab that can handle millions of points and supports view linking"
-authors = [{ name = "Fritz Lekschas", email = "code@lekschas.de" }]
+name = "jupyter-scatter-scsketch"
+description = "An interactive scatter plot widget for Jupyter Notebook, Lab, and Google Colab that can handle millions of points and supports view linking (and adds support for directional search)"
+authors = [{ name = "Fritz Lekschas", email = "code@lekschas.de" }, { name = "Andres Colubri", email = "andres.colubri@umassmed.edu" }, { name = "Askar Temirbek", email = "askar.temirbek@umassmed.edu" }]
 license = { text = "Apache-2.0" }
 readme = "README.md"
 requires-python = ">=3.9"
